@@ -5,6 +5,7 @@ Date: 9/30/25
 Lab: Assignment1
 Last modified: 9/30/25
 '''
+#this file is loosely based off of the 286 Lab 8 
 from maxheap import MaxHeap
 
 class Email:
