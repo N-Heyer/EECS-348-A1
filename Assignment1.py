@@ -4,6 +4,10 @@ KUID: 3142337
 Date: 9/30/25
 Lab: Assignment1
 Last modified: 9/30/25
+EECS 348 Assignment 1
+CEO Email prioritization program
+input: Assignment1_Test_File.txt
+Output: Next email and number of unread emails in priority list
 '''
 #this file is loosely based off of the 286 Lab 8 
 from maxheap import MaxHeap
