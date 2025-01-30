@@ -1,99 +1,101 @@
 '''
 Author: Nick Heyer
 KUID: 3142337
-Date: 11/13/24
-Lab: lab08
-Last modified: 11/13/24
-Purpose: uses maxheap to arrange patients in a hospital 
+Date: 9/30/25
+Lab: Assignment1
+Last modified: 9/30/25
 '''
-
-from patient import Patient
 from maxheap import MaxHeap
-'''
-The main file takes in a provided file and reads it line for line checking for the commands given and goes through individually doing the commands. 
-The main file also is capable of knowing if the file is empty and knowing there are no patients to treat saying " no patients waiting
-The file can also handle all errors without crashing and giving an explanation when necesary. 
-'''
+
+class Email:
+    PRIORITY_MAP = { #used to create an actual priority based on the senders
+        "Boss": 5,
+        "Subordinate": 4,
+        "Peer": 3,
+        "ImportantPerson": 2,
+        "OtherPerson": 1
+    }
+
+    def __init__(self, sender_category, subject, date, arrival_order): #init the sender cat, subject,date, arrival order of emails and priority of the sender
+        self.sender_category = sender_category.strip()
+        self.subject = subject.strip()
+        self.date = date.strip()
+        self.arrival_order = arrival_order
+        self.priority = (self.PRIORITY_MAP.get(self.sender_category, 0), -arrival_order)  #this is using the priority map to keep the highest priority at the top and the less relevant at the bottom
+
+    def __lt__(self, other): #helps the priority by using the less than magic method
+        return self.priority < other.priority
+
+    def __gt__(self, other):# helps the priority by using the greater than magic method
+        return self.priority > other.priority
+
+    def __repr__(self): #magic method to make a string "representation"
+        return f"Sender: {self.sender_category}, Subject: {self.subject}, Date: {self.date}"
+
+
 def main():
-    hospital_queue = MaxHeap()
-    arrival_counter = 1 
-    '''
-    Counter to track the order of patient arrival
-    '''
-    file_name = input('Enter the file containg patients and commands: ')
-    '''
-    Asks the user to enter a file name containing the elements needed to process
-    '''
+    email_queue = MaxHeap()
+    arrival_counter = 1  #keeps track of the order of email arrival
+
+    file_name = input("Enter the file name containing emails and commands: ").strip() 
+
     try:
-        '''
-        Opens the specified file for reading
-        '''
-        with open(file_name, 'r') as file:
+        with open(file_name, 'r') as file: #opens the file and reads the contents
             for line in file:
-                parts = line.strip().split() 
-                ''' 
-                splits the line into parts basedd on the spaces 
-                '''
-                command = parts[0]
+                line = line.strip()
+                if not line:
+                    continue
+                
+                parts = line.split(" ", 1) #splits the commands up
+                command = parts[0].strip().upper()
+
                 try:
-                    '''
-                    Handles the arrive command ot add the patient to the Q 
-                    '''
-                    if command == 'ARRIVE':
-                        '''
-                        gets the patient info
-                        '''
-                        first_name = parts[1]
-                        last_name = parts[2]
-                        age = int(parts[3])
-                        illness = parts[4]
-                        severity = int(parts[5])
-                        patient = Patient(first_name,last_name,age,illness,severity,arrival_counter)
-                        hospital_queue.add(patient)
+                    if command == "EMAIL": #safety incase the formatting of the email is wrong aka more than one part
+                        if len(parts) < 2:
+                            print(f"\nInvalid EMAIL format: {line}\n")
+                            continue
+                        
+                        email_data = parts[1].split(",") #splits the email into 3 parts and checks for invalid formatting by having more than 3 parts
+                        if len(email_data) != 3:
+                            print(f"\nInvalid EMAIL format: {line}\n")
+                            continue
+                        
+                        sender_category = email_data[0].strip()
+                        subject = email_data[1].strip()  #strips
+                        date = email_data[2].strip()
+
+                        email = Email(sender_category, subject, date, arrival_counter)
+                        email_queue.add(email)
                         arrival_counter += 1
-                        '''
-                        arrival counter for next patient
-                        '''
-                    elif command == 'COUNT':
-                        '''
-                        Handles count command to display the count of patients waiting
-                        '''
-                        count = hospital_queue.count()
-                        print(f'\nThere are {count} patients waiting.\n')
-                    elif command == 'NEXT':
-                        '''
-                        Looks at the next patient without removing them
-                        '''
+
+                    elif command == "COUNT": #used to count the emails like listed above after being called on COUNT
+                        count = email_queue.count()
+                        print(f"\nThere are {count} emails to read.\n")
+
+                    elif command == "NEXT": #looks at the next email but doesnt remove it 
                         try:
-                            next_patient = hospital_queue.peek()
-                            print("Next patient:")
-                            print(f"  Name: {next_patient.last_name}, {next_patient.first_name}")
-                            print(f"  Age: {next_patient.age}")
-                            print(f"  Suffers from: {next_patient.illness}")
-                            print(f"  Illness severity: {next_patient.severity}")
-                            print(f"  Arrival order: {next_patient.arrival_order}\n")
+                            next_email = email_queue.peek()
+                            print("\nNext email:")
+                            print(f"\tSender: {next_email.sender_category}")
+                            print(f"\tSubject: {next_email.subject}")
+                            print(f"\tDate: {next_email.date}\n")
                         except IndexError:
-                            '''
-                            Handles the case of no patients waiting
-                            '''
-                            print("No patients waiting.")
-                    elif command == "TREAT":
-                        '''
-                        Handles the treat command to remove the patient from the Q
-                        '''
+                            print("\nNo emails waiting.\n")
+
+                    elif command == "READ": #reads the email and pops it 
                         try:
-                            '''
-                            removes patient from the Q and returns the highest 
-                            '''
-                            treated_patient = hospital_queue.pop()
+                            read_email = email_queue.pop()
                         except IndexError:
-                            print("No patients to treat.")
+                            print("\nNo emails to read.\n")
+
                     else:
-                        print('File contains improper commands or no commands')
-                except IndexError:
-                    print('File formated improperly')
-                except ValueError:
-                    print('File formated improperly')
+                        print(f"\nInvalid command found in file: {line}\n") #invalid command, problems with EMAIL and COUNT
+
+                except (IndexError, ValueError):
+                    print(f"\nFile formatted improperly: {line}\n") #wrong format for file, problems with EMAIL and COUNT 
+
     except FileNotFoundError:
-        print('File not found.')
+        print("\nFile not found.\n") #mistype the file name 
+
+
 main()
