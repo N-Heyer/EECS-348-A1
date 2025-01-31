@@ -8,6 +8,7 @@ EECS 348 Assignment 1
 CEO Email prioritization program
 input: Assignment1_Test_File.txt
 Output: Next email and number of unread emails in priority list
+Collaborators: ChatGPT was used to find syntax errors, errors in my corrected code from 268 to work for this project and to make the priority more simple than from the lab from EECS 268 
 '''
 #this file is loosely based off of the 286 Lab 8 
 from maxheap import MaxHeap
